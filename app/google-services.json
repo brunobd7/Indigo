@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "996550926220",
+    "firebase_url": "https://indigo-ebd50.firebaseio.com",
+    "project_id": "indigo-ebd50",
+    "storage_bucket": "indigo-ebd50.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:996550926220:android:02334e3f26b3ef55",
+        "android_client_info": {
+          "package_name": "pedro.com.br.indigo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "996550926220-ss8m9g04t1hug90hrt8ou99tqlu2phj8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "pedro.com.br.indigo",
+            "certificate_hash": "3f94a423cdacf82ee9b98589ce7a422dc04a7ade"
+          }
+        },
+        {
+          "client_id": "996550926220-riq1em1361abmqsn5btmu4uir4quq6uf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCXoBmM2mQu-vBmqFKIQ0e-vQs89-g4qzc"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "996550926220-riq1em1361abmqsn5btmu4uir4quq6uf.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
