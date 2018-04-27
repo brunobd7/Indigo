@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">Indigo</string>
     <string name="newReg">Novo no Indigo ?</string>
-    <string name="nome">Nome:</string>
+    <string name="name">Nome:</string>
     <string name="password">Senha:</string>
+    <string name="email">Email:</string>
+    <string name="create_account">Criar Conta</string>
 </resources>
