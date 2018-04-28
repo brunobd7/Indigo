@@ -5,4 +5,8 @@
     <string name="password">Senha:</string>
     <string name="email">Email:</string>
     <string name="create_account">Criar Conta</string>
+    <string name="welcome">Bem-vindo(a) ao Indigo</string>
+    <string name="logout">Sair</string>
+    <string name="account_settings">Configuração de Conta</string>
+    <string name="all_users">Todos Usuários</string>
 </resources>
