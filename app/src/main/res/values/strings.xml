@@ -9,4 +9,5 @@
     <string name="logout">Sair</string>
     <string name="account_settings">Configuração de Conta</string>
     <string name="all_users">Todos Usuários</string>
+    <string name="create_new_account">Criar Nova Conta</string>
 </resources>
