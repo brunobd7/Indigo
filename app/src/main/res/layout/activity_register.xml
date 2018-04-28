@@ -9,7 +9,7 @@
     <include
         android:id="@+id/register_toolbar"
         layout="@layout/app_bar_layout"
-        android:layout_width="389dp"
+        android:layout_width="500dp"
         android:layout_height="wrap_content"
         tools:layout_editor_absoluteY="0dp" />
 
@@ -91,11 +91,12 @@
         android:layout_height="33dp"
         android:layout_marginEnd="219dp"
         android:layout_marginStart="20dp"
-        android:layout_marginTop="50dp"
+        android:layout_marginTop="52dp"
         android:text="@string/create_new_account"
         android:textColor="#000"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/register_toolbar" />
 
