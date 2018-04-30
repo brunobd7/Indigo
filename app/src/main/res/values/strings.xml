@@ -11,4 +11,5 @@
     <string name="all_users">Todos Usuários</string>
     <string name="create_new_account">Crie sua nova Conta!!!</string>
     <string name="loginStart">JÁ POSSUI SUA CONTA?</string>
+    <string name="welcome_start">Bem Vindo ao Indigo Chat App</string>
 </resources>
