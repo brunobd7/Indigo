@@ -1,11 +1,13 @@
 package pedro.com.br.indigo;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -28,6 +30,7 @@ public class RegisterActivity extends AppCompatActivity {
     private Toolbar mToolbar;
 
     private FirebaseAuth mAuth;
+    private ProgressDialog mRegProgress;
 
 
     @Override
@@ -44,6 +47,8 @@ public class RegisterActivity extends AppCompatActivity {
         getSupportActionBar().setTitle("Crie sua Conta");
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+        mRegProgress = new ProgressDialog(this);
+
         //Campos
         mDisplayName = (TextInputLayout) findViewById(R.id.reg_display_name);
         mEmail = (TextInputLayout) findViewById(R.id.reg_email);
@@ -57,7 +62,15 @@ public class RegisterActivity extends AppCompatActivity {
                 String email = mEmail.getEditText().getText().toString();
                 String password = mPassword.getEditText().getText().toString();
 
-                register_user(display_name, email, password);
+                if(!TextUtils.isEmpty(display_name) || !TextUtils.isEmpty(email) || !TextUtils.isEmpty(password)){
+                    mRegProgress.setTitle("Registrando Usuário");
+                    mRegProgress.setMessage("Por favor, aguarde o processamento!");
+                    mRegProgress.setCanceledOnTouchOutside(false);
+                    mRegProgress.show();
+                    register_user(display_name, email, password);
+                }
+
+
 
             }
         });
@@ -70,13 +83,16 @@ public class RegisterActivity extends AppCompatActivity {
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if(task.isSuccessful()){
 
+                    mRegProgress.dismiss();
                     Intent mainIntent = new Intent(RegisterActivity.this, MainActivity.class);
                     startActivity(mainIntent);
                     finish();
 
                 } else{
 
-                    Toast.makeText(RegisterActivity.this, "Ocorreram erros", Toast.LENGTH_LONG).show();
+                    mRegProgress.hide();
+                    Toast.makeText(RegisterActivity.this, "Não foi possível acessar o sistema." +
+                            " Por favor verifique os campos preenchidos e tente novamente! ", Toast.LENGTH_LONG).show();
                 }
             }
         });
