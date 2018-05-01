@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:title="@string/configuracoes"
+        android:id="@+id/configuracoes_id"/>
+    <item
+        android:id="@+id/perfil_id"
+        android:title="@string/meu_perfil"/>
+    <item
+        android:id="@+id/sobre_id"
+        android:title="@string/sobre_nos"/>
+    <item
+        android:title=""
+        android:id="@+id/pesquisa_id"
+        android:icon="@drawable/pesquisa"
+        app:showAsAction="always"/>
+
+</menu>
