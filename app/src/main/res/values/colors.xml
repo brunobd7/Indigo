@@ -4,4 +4,8 @@
     <color name="colorPrimaryDark">#632763</color>
     <color name="colorAccent">#6F2D6F</color>
     <color name="darkColor">#222222</color>
+    <color name="materialDesign3">#b282b4</color>
+    <color name="materialDesign2">#cc77a1</color>
+    <color name="materiaDesign1">#f16781</color>
+
 </resources>

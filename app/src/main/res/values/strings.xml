@@ -2,12 +2,10 @@
     <string name="app_name">Indigo</string>
     <string name="newReg">Novo no Indigo ?</string>
     <string name="title_activity_indigo_home">IndigoHomeActivity</string>
-    <string name="tab_text_1">Tab 1</string>
-    <string name="tab_text_2">Tab 2</string>
-    <string name="tab_text_3">Tab 3</string>
-    <string name="action_settings">Settings</string>
-    <string name="section_format">Hello World from section: %1$d</string>
-    <string name="configuracoes">Configuracoes</string>
-    <string name="meu_perfil">Meu Perfil</string>
-    <string name="sobre_nos">Sobre Nos</string>
+    <string name="tab_solicitacoes">Solicitacoes</string>
+    <string name="tab_conversas">Conversas</string>
+    <string name="tab_amigos">Amigos</string>
+    <string name="menu_configuracoes">Configuracoes</string>
+    <string name="menu_meu_perfil">Meu Perfil</string>
+    <string name="menu_sobre_nos">Sobre Nos</string>
 </resources>

@@ -18,7 +18,10 @@
         </activity>
         <activity android:name=".StartActivity" />
         <activity android:name=".RegisterActivity" />
-        <activity android:name=".MainActivity"></activity>
+        <activity android:name=".MainActivity" />
+        <activity android:name=".Fragmentos.FragmentoSolicitacoesActivity" />
+        <activity android:name=".Fragmentos.FragmentoConversasActivity" />
+        <activity android:name=".Fragmentos.FragmentoAmigosActivity"></activity>
     </application>
 
 </manifest>

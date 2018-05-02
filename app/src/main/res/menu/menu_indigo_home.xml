@@ -3,14 +3,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:title="@string/configuracoes"
-        android:id="@+id/configuracoes_id"/>
+        android:id="@+id/configuracoes_id"
+        android:title="@string/menu_configuracoes"/>
     <item
         android:id="@+id/perfil_id"
-        android:title="@string/meu_perfil"/>
+        android:title="@string/menu_meu_perfil"/>
     <item
         android:id="@+id/sobre_id"
-        android:title="@string/sobre_nos"/>
+        android:title="@string/menu_sobre_nos"/>
     <item
         android:title=""
         android:id="@+id/pesquisa_id"
