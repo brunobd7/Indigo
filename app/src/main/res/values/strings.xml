@@ -16,4 +16,7 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="default_status">Olá, Eu estou usando Indigo App Chat!</string>
+    <string name="trocar_status">TROCAR STATUS</string>
+    <string name="trocar_imagem">TROCAR IMAGEM</string>
+    <string name="display_nome">DISPLAY NOME</string>
 </resources>

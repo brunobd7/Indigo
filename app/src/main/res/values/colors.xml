@@ -5,4 +5,12 @@
     <color name="colorAccent">#6F2D6F</color>
     <color name="darkColor">#222222</color>
     <color name="palletFirst">#F16781</color>
+    <color name="materialDesign7">#424F5F</color>
+    <color name="materialDesign6">#4B6C95</color>
+    <color name="materialDesign5">#5EA6FB</color>
+    <color name="materialDesign4">#5EA6FB</color>
+    <color name="materialDesign3">#b282b4</color>
+    <color name="materialDesign2">#cc77a1</color>
+    <color name="materialDesign1">#F16781</color>
+
 </resources>
