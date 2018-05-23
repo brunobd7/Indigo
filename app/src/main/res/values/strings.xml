@@ -19,4 +19,5 @@
     <string name="trocar_status">TROCAR STATUS</string>
     <string name="trocar_imagem">TROCAR IMAGEM</string>
     <string name="display_nome">DISPLAY NOME</string>
+    <string name="display_name">Display Name</string>
 </resources>
