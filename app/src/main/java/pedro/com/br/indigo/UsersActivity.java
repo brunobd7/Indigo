@@ -61,12 +61,15 @@ public class UsersActivity extends AppCompatActivity {
 
     private void startListening() {
 
+        //REFERENCIA DO FIREBASE PARA PREENCHIMENTO
         Query query = FirebaseDatabase.getInstance().getReference().child("Users").limitToLast(50);
 
+        //COSNTRUINDO O OBJETO COM A REFERENCIA DO FIREBASE E DA CLASSE LOCAL
         FirebaseRecyclerOptions<Users> options = new FirebaseRecyclerOptions.Builder<Users>().setQuery(query, Users.class).build();
 
         FirebaseRecyclerAdapter adapter = new FirebaseRecyclerAdapter<Users, UsersViewHolder>(options){
 
+            //INSTANCIANDO A VIEW E INFLANDO A MESMA
             @NonNull
             @Override
             public UsersViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -76,11 +79,12 @@ public class UsersActivity extends AppCompatActivity {
                 return new UsersViewHolder(view);
             }
 
+            //PREENCHENDO A VIEW
             @Override
             protected void onBindViewHolder(@NonNull UsersViewHolder usersViewHolder, int position, @NonNull Users users) {
                 usersViewHolder.setUserName(users.getName());
                 usersViewHolder.setUserStatus(users.getStatus());
-                //usersViewHolder.setUserImage(users.getImage())
+                usersViewHolder.setUserImage(users.getThumb_image());
             }
         };
 
@@ -106,9 +110,9 @@ public class UsersActivity extends AppCompatActivity {
             status.setText(userStatus);
         }
 
-        public void setUserImage(String userImage, Context context) {
+        public void setUserImage(String thumbImage) {
             CircleImageView image = (CircleImageView) mView.findViewById(R.id.user_single_image);
-            Picasso.get().load(userImage).into(image);
+            Picasso.get().load(thumbImage).placeholder(R.drawable.default_avatar).into(image);
         }
     }
 }
