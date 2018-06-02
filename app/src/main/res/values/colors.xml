@@ -12,5 +12,6 @@
     <color name="materialDesign3">#b282b4</color>
     <color name="materialDesign2">#cc77a1</color>
     <color name="materialDesign1">#F16781</color>
+    <color name="whiteColor">#FFFFFF</color>
 
 </resources>
