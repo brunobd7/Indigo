@@ -79,8 +79,43 @@ public class ProfileActivity extends AppCompatActivity {
                 //SETANDO IMAGEM NA VIEW COM O PICASSO
                 Picasso.get().load(image).placeholder(R.drawable.default_avatar).into(mProfileImage);
 
-                //FECHANDO O POPUP AO FINAL DO CARREGAMENTO
-                mProgressDialog.dismiss();
+                //-------Lista de amigos / Solicitacao
+
+                mFriendRequestDataBase.child(mCurrent_user.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+
+                        //VERIFICANDO SE O USUARIO LOGADO TEM ALGUMA SOLICITAÇAO PENDENTE SENDO SOLICITACAO OU CANCELAMENTO DE SOLICITACAO
+                       if (dataSnapshot.hasChild(user_id)){
+
+                           String req_type = dataSnapshot.child(user_id).child("request_type").getValue().toString();
+                           if (req_type.equals("received")){
+
+
+                               mCurrent_state="req_received";
+                               mProfileSendReqBtn.setText("Aceitar Solicitação de Amizade");
+
+                           }else if(req_type.equals("sent")){
+
+                               mCurrent_state = "req_sent";
+                               mProfileSendReqBtn.setText("Cancelar Solicitação de Amizade");
+                           }
+
+
+                       }
+
+                        //FECHANDO O POPUP AO FINAL DO CARREGAMENTO
+                        mProgressDialog.dismiss();
+
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+
+
             }
 
             @Override
@@ -92,6 +127,10 @@ public class ProfileActivity extends AppCompatActivity {
         mProfileSendReqBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+                mProfileSendReqBtn.setEnabled(false);
+
+                //---------- SEM AMIGOS
 
                 if(mCurrent_state.equals("not_friends")){
 
@@ -113,7 +152,11 @@ public class ProfileActivity extends AppCompatActivity {
                                     @Override
                                     public void onSuccess(Void aVoid) {
 
-                                        Toast.makeText(ProfileActivity.this, "Solicitação Enviada", Toast.LENGTH_SHORT).show();
+                                        mProfileSendReqBtn.setEnabled(true);
+                                        mCurrent_state = "req_sent";
+                                        mProfileSendReqBtn.setText("Cancelar Solicitação de Amizade");
+
+                                        //Toast.makeText(ProfileActivity.this, "Solicitação Enviada", Toast.LENGTH_SHORT).show();
 
 
                                     }
@@ -130,9 +173,32 @@ public class ProfileActivity extends AppCompatActivity {
                     });
 
                 }
-                else{
 
+                //------ CANCELAR SOLICITACAO DE AMIZADE
+
+                if (mCurrent_state.equals("req_sent")){
+
+                    mFriendRequestDataBase.child(mCurrent_user.getUid()).child(user_id).removeValue()
+                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+
+                            //PEGANDO A REFERENCIA E ID DO AMIGO SELECIONADO , O ID DO USUARIO LOGADO E OS REMOVENDO DO BANCO
+                            mFriendRequestDataBase.child(user_id).child(mCurrent_user.getUid()).removeValue()
+                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+
+                                    mProfileSendReqBtn.setEnabled(false);
+                                    mCurrent_state = "not_friends";
+                                    mProfileSendReqBtn.setText("Enviar Solicitação de Amizade");
+
+                                }
+                            });
+                        }
+                    });
                 }
+
 
             }
         });
