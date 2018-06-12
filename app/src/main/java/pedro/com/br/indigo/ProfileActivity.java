@@ -24,16 +24,19 @@ import com.squareup.picasso.Picasso;
 
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.HashMap;
 
 public class ProfileActivity extends AppCompatActivity {
 
     private TextView mProfileName, mProfileStatus, mProfileFriendsCount;
     private ImageView mProfileImage;
-    private Button mProfileSendReqBtn;
+    private Button mProfileSendReqBtn, mDeclineBtn;
 
     private DatabaseReference mUserDataBase;
     private DatabaseReference mFriendRequestDataBase;
     private DatabaseReference mFriendDataBase;
+    private DatabaseReference mNotificationDataBase;
+
     private FirebaseUser mCurrent_user;
     private ProgressDialog mProgressDialog;
 
@@ -48,17 +51,19 @@ public class ProfileActivity extends AppCompatActivity {
 
         mUserDataBase = FirebaseDatabase.getInstance().getReference().child("Users").child(user_id);
         mFriendDataBase = FirebaseDatabase.getInstance().getReference().child("Friends");
-
-        mCurrent_state = "not_friends";
+        mNotificationDataBase = FirebaseDatabase.getInstance().getReference().child("Notifications");
         mFriendRequestDataBase = FirebaseDatabase.getInstance().getReference().child("Friend_Request");
 
+        mCurrent_state = "not_friends";
 
         //Pegando dados da view
         mProfileName = (TextView) findViewById(R.id.profile_name);
         mProfileStatus = (TextView) findViewById(R.id.profile_status);
         mProfileFriendsCount = (TextView) findViewById(R.id.profile_friends_count);
-        mProfileSendReqBtn = (Button) findViewById(R.id.profile_btn_send_req);
         mProfileImage = (ImageView) findViewById(R.id.profile_image);
+
+        mProfileSendReqBtn = (Button) findViewById(R.id.profile_btn_send_req);
+        mDeclineBtn = (Button) findViewById(R.id.profile_btn_decline_req);
 
 
 
@@ -104,10 +109,19 @@ public class ProfileActivity extends AppCompatActivity {
                                mCurrent_state="req_received";
                                mProfileSendReqBtn.setText("Aceitar Solicitação de Amizade");
 
+                               mDeclineBtn.setVisibility(View.VISIBLE);
+                               mDeclineBtn.setEnabled(true);
+
                            }else if(req_type.equals("sent")){
 
                                mCurrent_state = "req_sent";
                                mProfileSendReqBtn.setText("Cancelar Solicitação de Amizade");
+
+                               //DESABILITANDO BOTAO DE RECUSAR PARA O USUARIO QUE ESTA ENVIANDO
+
+                               mDeclineBtn.setVisibility(View.INVISIBLE);
+                               mDeclineBtn.setEnabled(false);
+
                            }
 
                            //FECHANDO O POPUP AO FINAL DO CARREGAMENTO
@@ -123,6 +137,9 @@ public class ProfileActivity extends AppCompatActivity {
 
                                        mCurrent_state="friends";
                                        mProfileSendReqBtn.setText("Desfazer Amizade");
+
+                                       mDeclineBtn.setVisibility(View.INVISIBLE);
+                                       mDeclineBtn.setEnabled(false);
 
                                    }
                                    //FECHANDO O POPUP AO FINAL DO CARREGAMENTO
@@ -186,9 +203,22 @@ public class ProfileActivity extends AppCompatActivity {
                                     @Override
                                     public void onSuccess(Void aVoid) {
 
+                                        //NOTIFICACOES DE SOLICITACAO DE AMIZADE
+                                        HashMap<String,String> notificationsData = new HashMap<>();
+                                        notificationsData.put("from", mCurrent_user.getUid());
+                                        notificationsData.put("type","request");
 
-                                        mCurrent_state = "req_sent";
-                                        mProfileSendReqBtn.setText("Cancelar Solicitação de Amizade");
+                                        mNotificationDataBase.child(user_id).push().setValue(notificationsData).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                            @Override
+                                            public void onSuccess(Void aVoid) {
+
+                                                mCurrent_state = "req_sent";
+                                                mProfileSendReqBtn.setText("Cancelar Solicitação de Amizade");
+
+                                                mDeclineBtn.setVisibility(View.INVISIBLE);
+                                                mDeclineBtn.setEnabled(false);
+                                            }
+                                        });
 
                                         //Toast.makeText(ProfileActivity.this, "Solicitação Enviada", Toast.LENGTH_SHORT).show();
 
@@ -227,6 +257,9 @@ public class ProfileActivity extends AppCompatActivity {
                                     mProfileSendReqBtn.setEnabled(true);
                                     mCurrent_state = "not_friends";
                                     mProfileSendReqBtn.setText("Enviar Solicitação de Amizade");
+
+                                    mDeclineBtn.setVisibility(View.INVISIBLE);
+                                    mDeclineBtn.setEnabled(false);
 
                                 }
                             });
@@ -268,6 +301,9 @@ public class ProfileActivity extends AppCompatActivity {
                                                                                     mProfileSendReqBtn.setEnabled(true);
                                                                                     mCurrent_state = "friends";
                                                                                     mProfileSendReqBtn.setText("Desfazer Amizade");
+
+                                                                                    mDeclineBtn.setVisibility(View.INVISIBLE);
+                                                                                    mDeclineBtn.setEnabled(false);
 
                                                                                 }
                                                                             });
