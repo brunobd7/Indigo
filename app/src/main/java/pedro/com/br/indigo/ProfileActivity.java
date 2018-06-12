@@ -87,7 +87,7 @@ public class ProfileActivity extends AppCompatActivity {
                 //SETANDO IMAGEM NA VIEW COM O PICASSO
                 Picasso.get().load(image).placeholder(R.drawable.default_avatar).into(mProfileImage);
 
-                //-------Lista de amigos / Solicitacao
+                //-------Lista de amigos / Solicitacoes
 
                 mFriendRequestDataBase.child(mCurrent_user.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -110,11 +110,36 @@ public class ProfileActivity extends AppCompatActivity {
                                mProfileSendReqBtn.setText("Cancelar Solicitação de Amizade");
                            }
 
+                           //FECHANDO O POPUP AO FINAL DO CARREGAMENTO
+                           mProgressDialog.dismiss();
+
+                       } else {
+
+                           mFriendDataBase.child(mCurrent_user.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+                               @Override
+                               public void onDataChange(DataSnapshot dataSnapshot) {
+
+                                   if(dataSnapshot.hasChild(user_id)){
+
+                                       mCurrent_state="friends";
+                                       mProfileSendReqBtn.setText("Desfazer Amizade");
+
+                                   }
+                                   //FECHANDO O POPUP AO FINAL DO CARREGAMENTO
+                                   mProgressDialog.dismiss();
+                               }
+
+                               @Override
+                               public void onCancelled(DatabaseError databaseError) {
+
+                                   //FECHANDO O POPUP AO FINAL DO CARREGAMENTO
+                                   mProgressDialog.dismiss();
+
+                               }
+                           });
 
                        }
 
-                        //FECHANDO O POPUP AO FINAL DO CARREGAMENTO
-                        mProgressDialog.dismiss();
 
                     }
 
