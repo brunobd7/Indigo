@@ -22,14 +22,21 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
+import java.text.DateFormat;
+import java.util.Date;
+import java.util.HashMap;
+
 public class ProfileActivity extends AppCompatActivity {
 
     private TextView mProfileName, mProfileStatus, mProfileFriendsCount;
     private ImageView mProfileImage;
-    private Button mProfileSendReqBtn;
+    private Button mProfileSendReqBtn, mDeclineBtn;
 
     private DatabaseReference mUserDataBase;
     private DatabaseReference mFriendRequestDataBase;
+    private DatabaseReference mFriendDataBase;
+    private DatabaseReference mNotificationDataBase;
+
     private FirebaseUser mCurrent_user;
     private ProgressDialog mProgressDialog;
 
@@ -43,16 +50,22 @@ public class ProfileActivity extends AppCompatActivity {
         final String user_id = getIntent().getStringExtra("user_id");
 
         mUserDataBase = FirebaseDatabase.getInstance().getReference().child("Users").child(user_id);
+        mFriendDataBase = FirebaseDatabase.getInstance().getReference().child("Friends");
+        mNotificationDataBase = FirebaseDatabase.getInstance().getReference().child("Notifications");
+        mFriendRequestDataBase = FirebaseDatabase.getInstance().getReference().child("Friend_Request");
+
+        mCurrent_state = "not_friends";
 
         //Pegando dados da view
         mProfileName = (TextView) findViewById(R.id.profile_name);
         mProfileStatus = (TextView) findViewById(R.id.profile_status);
         mProfileFriendsCount = (TextView) findViewById(R.id.profile_friends_count);
-        mProfileSendReqBtn = (Button) findViewById(R.id.profile_btn_send_req);
         mProfileImage = (ImageView) findViewById(R.id.profile_image);
 
-        mCurrent_state = "not_friends";
-        mFriendRequestDataBase = FirebaseDatabase.getInstance().getReference().child("Friend_Request");
+        mProfileSendReqBtn = (Button) findViewById(R.id.profile_btn_send_req);
+        mDeclineBtn = (Button) findViewById(R.id.profile_btn_decline_req);
+
+
 
         //CAPTURANDO USUARIO ATUAL
         mCurrent_user = FirebaseAuth.getInstance().getCurrentUser();
@@ -79,7 +92,7 @@ public class ProfileActivity extends AppCompatActivity {
                 //SETANDO IMAGEM NA VIEW COM O PICASSO
                 Picasso.get().load(image).placeholder(R.drawable.default_avatar).into(mProfileImage);
 
-                //-------Lista de amigos / Solicitacao
+                //-------Lista de amigos / Solicitacoes
 
                 mFriendRequestDataBase.child(mCurrent_user.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -88,6 +101,7 @@ public class ProfileActivity extends AppCompatActivity {
                         //VERIFICANDO SE O USUARIO LOGADO TEM ALGUMA SOLICITAÇAO PENDENTE SENDO SOLICITACAO OU CANCELAMENTO DE SOLICITACAO
                        if (dataSnapshot.hasChild(user_id)){
 
+                           //DEPENDENDO DO TIPO DE SOLICITACAO MUDAMOS O  TEXTO E FUNCAO DO BOTAO PARA "ACEITAR" OU "CANCELAR" A SOLICITACAO
                            String req_type = dataSnapshot.child(user_id).child("request_type").getValue().toString();
                            if (req_type.equals("received")){
 
@@ -95,17 +109,54 @@ public class ProfileActivity extends AppCompatActivity {
                                mCurrent_state="req_received";
                                mProfileSendReqBtn.setText("Aceitar Solicitação de Amizade");
 
+                               mDeclineBtn.setVisibility(View.VISIBLE);
+                               mDeclineBtn.setEnabled(true);
+
                            }else if(req_type.equals("sent")){
 
                                mCurrent_state = "req_sent";
                                mProfileSendReqBtn.setText("Cancelar Solicitação de Amizade");
+
+                               //DESABILITANDO BOTAO DE RECUSAR PARA O USUARIO QUE ESTA ENVIANDO
+
+                               mDeclineBtn.setVisibility(View.INVISIBLE);
+                               mDeclineBtn.setEnabled(false);
+
                            }
 
+                           //FECHANDO O POPUP AO FINAL DO CARREGAMENTO
+                           mProgressDialog.dismiss();
+
+                       } else {
+
+                           mFriendDataBase.child(mCurrent_user.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+                               @Override
+                               public void onDataChange(DataSnapshot dataSnapshot) {
+
+                                   if(dataSnapshot.hasChild(user_id)){
+
+                                       mCurrent_state="friends";
+                                       mProfileSendReqBtn.setText("Desfazer Amizade");
+
+                                       mDeclineBtn.setVisibility(View.INVISIBLE);
+                                       mDeclineBtn.setEnabled(false);
+
+                                   }
+                                   //FECHANDO O POPUP AO FINAL DO CARREGAMENTO
+                                   mProgressDialog.dismiss();
+                               }
+
+                               @Override
+                               public void onCancelled(DatabaseError databaseError) {
+
+                                   //FECHANDO O POPUP AO FINAL DO CARREGAMENTO
+                                   mProgressDialog.dismiss();
+
+                               }
+                           });
 
                        }
 
-                        //FECHANDO O POPUP AO FINAL DO CARREGAMENTO
-                        mProgressDialog.dismiss();
 
                     }
 
@@ -130,7 +181,7 @@ public class ProfileActivity extends AppCompatActivity {
 
                 mProfileSendReqBtn.setEnabled(false);
 
-                //---------- SEM AMIGOS
+                //---------- SEM AMIGOS -----------------
 
                 if(mCurrent_state.equals("not_friends")){
 
@@ -152,9 +203,22 @@ public class ProfileActivity extends AppCompatActivity {
                                     @Override
                                     public void onSuccess(Void aVoid) {
 
-                                        mProfileSendReqBtn.setEnabled(true);
-                                        mCurrent_state = "req_sent";
-                                        mProfileSendReqBtn.setText("Cancelar Solicitação de Amizade");
+                                        //NOTIFICACOES DE SOLICITACAO DE AMIZADE
+                                        HashMap<String,String> notificationsData = new HashMap<>();
+                                        notificationsData.put("from", mCurrent_user.getUid());
+                                        notificationsData.put("type","request");
+
+                                        mNotificationDataBase.child(user_id).push().setValue(notificationsData).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                            @Override
+                                            public void onSuccess(Void aVoid) {
+
+                                                mCurrent_state = "req_sent";
+                                                mProfileSendReqBtn.setText("Cancelar Solicitação de Amizade");
+
+                                                mDeclineBtn.setVisibility(View.INVISIBLE);
+                                                mDeclineBtn.setEnabled(false);
+                                            }
+                                        });
 
                                         //Toast.makeText(ProfileActivity.this, "Solicitação Enviada", Toast.LENGTH_SHORT).show();
 
@@ -169,6 +233,7 @@ public class ProfileActivity extends AppCompatActivity {
 
                             }
 
+                            mProfileSendReqBtn.setEnabled(true);
                         }
                     });
 
@@ -183,15 +248,18 @@ public class ProfileActivity extends AppCompatActivity {
                         @Override
                         public void onSuccess(Void aVoid) {
 
-                            //PEGANDO A REFERENCIA E ID DO AMIGO SELECIONADO , O ID DO USUARIO LOGADO E OS REMOVENDO DO BANCO
+                            //PEGANDO A REFERENCIA E ID DO USUARIO SELECIONADO , O ID DO USUARIO LOGADO E OS REMOVENDO DO BANCO
                             mFriendRequestDataBase.child(user_id).child(mCurrent_user.getUid()).removeValue()
                                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                                 @Override
                                 public void onSuccess(Void aVoid) {
 
-                                    mProfileSendReqBtn.setEnabled(false);
+                                    mProfileSendReqBtn.setEnabled(true);
                                     mCurrent_state = "not_friends";
                                     mProfileSendReqBtn.setText("Enviar Solicitação de Amizade");
+
+                                    mDeclineBtn.setVisibility(View.INVISIBLE);
+                                    mDeclineBtn.setEnabled(false);
 
                                 }
                             });
@@ -199,7 +267,55 @@ public class ProfileActivity extends AppCompatActivity {
                     });
                 }
 
+                //----------ESTADO DE SOLICITACAO RECEBIDA--------------
 
+                if(mCurrent_state.equals("req_received")){
+
+                    //CRIANDO CHAVE NO FIREBASE "Friends" E SETANDO DATA DA SOLICITACAO O INICIO DE AMIZADE NO BANCO
+                    final String currentDate = DateFormat.getDateInstance().format(new Date());
+                    mFriendDataBase.child(mCurrent_user.getUid()).child(user_id).setValue(currentDate)
+                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+
+                                    //SETANDO DATA DA SOLICITACAO O INICIO DE AMIZADE NO BANCO NO BANCO NA CHAVE "Friends"
+                                    mFriendDataBase.child(user_id).child(mCurrent_user.getUid()).setValue(currentDate)
+                                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                @Override
+                                                public void onSuccess(Void aVoid) {
+
+                                                    //DELETANDO A SOLICITACAO DO BANCO
+                                                    mFriendRequestDataBase.child(mCurrent_user.getUid()).child(user_id).removeValue()
+                                                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                                @Override
+                                                                public void onSuccess(Void aVoid) {
+
+                                                                    //PEGANDO A REFERENCIA E ID DO USUARIO SELECIONADO , O ID DO USUARIO LOGADO E OS REMOVENDO DO BANCO DE REQUISICOES
+                                                                    mFriendRequestDataBase.child(user_id).child(mCurrent_user.getUid()).removeValue()
+                                                                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+
+                                                                                //MUDANDO O STATUS DO USUARIO LOGADO PARA "friends" E HABILITANDO O BOTAO PARA DESFAZER AMIZADE
+                                                                                @Override
+                                                                                public void onSuccess(Void aVoid) {
+
+                                                                                    mProfileSendReqBtn.setEnabled(true);
+                                                                                    mCurrent_state = "friends";
+                                                                                    mProfileSendReqBtn.setText("Desfazer Amizade");
+
+                                                                                    mDeclineBtn.setVisibility(View.INVISIBLE);
+                                                                                    mDeclineBtn.setEnabled(false);
+
+                                                                                }
+                                                                            });
+                                                                }
+                                                            });
+
+                                                }
+                                            });
+                                }
+                            });
+
+                }
             }
         });
 
