@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ProfileActivity"
+    android:background="@color/darkColor">
+
+
+    <TextView
+        android:id="@+id/profile_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="220dp"
+        android:text="Nome do Usuario"
+        android:textColor="@color/whiteColor"
+        android:textSize="24sp" />
+
+    <TextView
+        android:id="@+id/profile_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="261dp"
+        android:text="Status do Usuario"
+        android:textColor="@color/whiteColor"
+        android:textSize="15dp" />
+
+    <TextView
+        android:id="@+id/profile_friends_count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="155dp"
+        android:text="Todos Amigos"
+        android:textColor="@color/whiteColor" />
+
+    <ImageView
+        android:id="@+id/profile_image"
+        android:layout_width="match_parent"
+        android:layout_height="220dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:adjustViewBounds="true"
+        android:scaleType="centerCrop"
+        android:src="@drawable/default_avatar" />
+        <!--SCALE TYPE EDITA O ESTILO DA IMAGEM "CENTRALIZADA CORTADO" POR EXEMPLO-->
+
+    <Button
+        android:id="@+id/profile_btn_send_req"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="92dp"
+        android:background="@color/colorPrimaryDark"
+        android:paddingLeft="25dp"
+        android:paddingRight="25dp"
+        android:text="ENVIAR SOLICITAÇÃO DE AMIZADE "
+        android:textColor="@color/whiteColor" />
+
+    <Button
+        android:id="@+id/profile_btn_decline_req"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="23dp"
+        android:background="@color/materialDesign1"
+        android:paddingLeft="25dp"
+        android:paddingRight="25dp"
+        android:text="RECUSAR SOLICITAÇÃO "
+        android:textColor="@color/whiteColor" />
+</RelativeLayout>

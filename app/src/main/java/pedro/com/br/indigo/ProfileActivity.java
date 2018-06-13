@@ -1,0 +1,323 @@
+package pedro.com.br.indigo;
+
+import android.app.ProgressDialog;
+import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.squareup.picasso.Picasso;
+
+import java.text.DateFormat;
+import java.util.Date;
+import java.util.HashMap;
+
+public class ProfileActivity extends AppCompatActivity {
+
+    private TextView mProfileName, mProfileStatus, mProfileFriendsCount;
+    private ImageView mProfileImage;
+    private Button mProfileSendReqBtn, mDeclineBtn;
+
+    private DatabaseReference mUserDataBase;
+    private DatabaseReference mFriendRequestDataBase;
+    private DatabaseReference mFriendDataBase;
+    private DatabaseReference mNotificationDataBase;
+
+    private FirebaseUser mCurrent_user;
+    private ProgressDialog mProgressDialog;
+
+    private String mCurrent_state;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_profile);
+
+        final String user_id = getIntent().getStringExtra("user_id");
+
+        mUserDataBase = FirebaseDatabase.getInstance().getReference().child("Users").child(user_id);
+        mFriendDataBase = FirebaseDatabase.getInstance().getReference().child("Friends");
+        mNotificationDataBase = FirebaseDatabase.getInstance().getReference().child("Notifications");
+        mFriendRequestDataBase = FirebaseDatabase.getInstance().getReference().child("Friend_Request");
+
+        mCurrent_state = "not_friends";
+
+        //Pegando dados da view
+        mProfileName = (TextView) findViewById(R.id.profile_name);
+        mProfileStatus = (TextView) findViewById(R.id.profile_status);
+        mProfileFriendsCount = (TextView) findViewById(R.id.profile_friends_count);
+        mProfileImage = (ImageView) findViewById(R.id.profile_image);
+
+        mProfileSendReqBtn = (Button) findViewById(R.id.profile_btn_send_req);
+        mDeclineBtn = (Button) findViewById(R.id.profile_btn_decline_req);
+
+
+
+        //CAPTURANDO USUARIO ATUAL
+        mCurrent_user = FirebaseAuth.getInstance().getCurrentUser();
+
+        //POP UP DE CARREGAMENTO DOS DADOS
+        mProgressDialog = new ProgressDialog(ProfileActivity.this);
+        mProgressDialog.setTitle("Carregando Dados");
+        mProgressDialog.setMessage("Por favor aguarde o processamento do perfil");
+        mProgressDialog.setCanceledOnTouchOutside(false);
+        mProgressDialog.show();
+
+        //PREENCHENDO COM DADOS DO BANCO
+        mUserDataBase.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                String name = dataSnapshot.child("name").getValue().toString();
+                String status = dataSnapshot.child("status").getValue().toString();
+                String image = dataSnapshot.child("image").getValue().toString();
+
+                mProfileName.setText(name);
+                mProfileStatus.setText(status);
+
+                //SETANDO IMAGEM NA VIEW COM O PICASSO
+                Picasso.get().load(image).placeholder(R.drawable.default_avatar).into(mProfileImage);
+
+                //-------Lista de amigos / Solicitacoes
+
+                mFriendRequestDataBase.child(mCurrent_user.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+
+                        //VERIFICANDO SE O USUARIO LOGADO TEM ALGUMA SOLICITAÇAO PENDENTE SENDO SOLICITACAO OU CANCELAMENTO DE SOLICITACAO
+                       if (dataSnapshot.hasChild(user_id)){
+
+                           //DEPENDENDO DO TIPO DE SOLICITACAO MUDAMOS O  TEXTO E FUNCAO DO BOTAO PARA "ACEITAR" OU "CANCELAR" A SOLICITACAO
+                           String req_type = dataSnapshot.child(user_id).child("request_type").getValue().toString();
+                           if (req_type.equals("received")){
+
+
+                               mCurrent_state="req_received";
+                               mProfileSendReqBtn.setText("Aceitar Solicitação de Amizade");
+
+                               mDeclineBtn.setVisibility(View.VISIBLE);
+                               mDeclineBtn.setEnabled(true);
+
+                           }else if(req_type.equals("sent")){
+
+                               mCurrent_state = "req_sent";
+                               mProfileSendReqBtn.setText("Cancelar Solicitação de Amizade");
+
+                               //DESABILITANDO BOTAO DE RECUSAR PARA O USUARIO QUE ESTA ENVIANDO
+
+                               mDeclineBtn.setVisibility(View.INVISIBLE);
+                               mDeclineBtn.setEnabled(false);
+
+                           }
+
+                           //FECHANDO O POPUP AO FINAL DO CARREGAMENTO
+                           mProgressDialog.dismiss();
+
+                       } else {
+
+                           mFriendDataBase.child(mCurrent_user.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+                               @Override
+                               public void onDataChange(DataSnapshot dataSnapshot) {
+
+                                   if(dataSnapshot.hasChild(user_id)){
+
+                                       mCurrent_state="friends";
+                                       mProfileSendReqBtn.setText("Desfazer Amizade");
+
+                                       mDeclineBtn.setVisibility(View.INVISIBLE);
+                                       mDeclineBtn.setEnabled(false);
+
+                                   }
+                                   //FECHANDO O POPUP AO FINAL DO CARREGAMENTO
+                                   mProgressDialog.dismiss();
+                               }
+
+                               @Override
+                               public void onCancelled(DatabaseError databaseError) {
+
+                                   //FECHANDO O POPUP AO FINAL DO CARREGAMENTO
+                                   mProgressDialog.dismiss();
+
+                               }
+                           });
+
+                       }
+
+
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+        mProfileSendReqBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                mProfileSendReqBtn.setEnabled(false);
+
+                //---------- SEM AMIGOS -----------------
+
+                if(mCurrent_state.equals("not_friends")){
+
+                    //CRIA A REFERENCIA DA SOLICITACAO DE AMIZADE NO BANCO E CAPTURA O 'ID' DO USUARIO QUE A FEZ A SOLICITACAO
+                    // EM SEGUIDA SETA O TIPO DE REQUISIÇÃO (ENVIADO) E O ID DO USUARIO QUE RECEBEU A SOLICITACAO.
+                    mFriendRequestDataBase.child(mCurrent_user.getUid()).child(user_id).child("request_type")
+                            .setValue("sent").addOnCompleteListener(new OnCompleteListener<Void>() {
+
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+
+                            if(task.isSuccessful()){
+
+                                //CAPTURA O ID DO USUARIO QUE FOI ALVO DA SOLICITACAO DE AMIZADE E SETA ISSO NO BANCO
+                                //EM SEGUIDA SETA O TIPO DE REQUISICAO (RECEBIDO) E O USUARIO(ID) DE ORIGEM QUE FEZ A SOLICITACAO DE AMIZADE
+                                mFriendRequestDataBase.child(user_id).child(mCurrent_user.getUid()).child("request_type")
+                                        .setValue("received").addOnSuccessListener(new OnSuccessListener<Void>() {
+
+                                    @Override
+                                    public void onSuccess(Void aVoid) {
+
+                                        //NOTIFICACOES DE SOLICITACAO DE AMIZADE
+                                        HashMap<String,String> notificationsData = new HashMap<>();
+                                        notificationsData.put("from", mCurrent_user.getUid());
+                                        notificationsData.put("type","request");
+
+                                        mNotificationDataBase.child(user_id).push().setValue(notificationsData).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                            @Override
+                                            public void onSuccess(Void aVoid) {
+
+                                                mCurrent_state = "req_sent";
+                                                mProfileSendReqBtn.setText("Cancelar Solicitação de Amizade");
+
+                                                mDeclineBtn.setVisibility(View.INVISIBLE);
+                                                mDeclineBtn.setEnabled(false);
+                                            }
+                                        });
+
+                                        //Toast.makeText(ProfileActivity.this, "Solicitação Enviada", Toast.LENGTH_SHORT).show();
+
+
+                                    }
+                                });
+
+                            }
+                            else{
+
+                                Toast.makeText(ProfileActivity.this, "Falha no envio da solicitação", Toast.LENGTH_SHORT).show();
+
+                            }
+
+                            mProfileSendReqBtn.setEnabled(true);
+                        }
+                    });
+
+                }
+
+                //------ CANCELAR SOLICITACAO DE AMIZADE
+
+                if (mCurrent_state.equals("req_sent")){
+
+                    mFriendRequestDataBase.child(mCurrent_user.getUid()).child(user_id).removeValue()
+                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+
+                            //PEGANDO A REFERENCIA E ID DO USUARIO SELECIONADO , O ID DO USUARIO LOGADO E OS REMOVENDO DO BANCO
+                            mFriendRequestDataBase.child(user_id).child(mCurrent_user.getUid()).removeValue()
+                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+
+                                    mProfileSendReqBtn.setEnabled(true);
+                                    mCurrent_state = "not_friends";
+                                    mProfileSendReqBtn.setText("Enviar Solicitação de Amizade");
+
+                                    mDeclineBtn.setVisibility(View.INVISIBLE);
+                                    mDeclineBtn.setEnabled(false);
+
+                                }
+                            });
+                        }
+                    });
+                }
+
+                //----------ESTADO DE SOLICITACAO RECEBIDA--------------
+
+                if(mCurrent_state.equals("req_received")){
+
+                    //CRIANDO CHAVE NO FIREBASE "Friends" E SETANDO DATA DA SOLICITACAO O INICIO DE AMIZADE NO BANCO
+                    final String currentDate = DateFormat.getDateInstance().format(new Date());
+                    mFriendDataBase.child(mCurrent_user.getUid()).child(user_id).setValue(currentDate)
+                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+
+                                    //SETANDO DATA DA SOLICITACAO O INICIO DE AMIZADE NO BANCO NO BANCO NA CHAVE "Friends"
+                                    mFriendDataBase.child(user_id).child(mCurrent_user.getUid()).setValue(currentDate)
+                                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                @Override
+                                                public void onSuccess(Void aVoid) {
+
+                                                    //DELETANDO A SOLICITACAO DO BANCO
+                                                    mFriendRequestDataBase.child(mCurrent_user.getUid()).child(user_id).removeValue()
+                                                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                                @Override
+                                                                public void onSuccess(Void aVoid) {
+
+                                                                    //PEGANDO A REFERENCIA E ID DO USUARIO SELECIONADO , O ID DO USUARIO LOGADO E OS REMOVENDO DO BANCO DE REQUISICOES
+                                                                    mFriendRequestDataBase.child(user_id).child(mCurrent_user.getUid()).removeValue()
+                                                                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+
+                                                                                //MUDANDO O STATUS DO USUARIO LOGADO PARA "friends" E HABILITANDO O BOTAO PARA DESFAZER AMIZADE
+                                                                                @Override
+                                                                                public void onSuccess(Void aVoid) {
+
+                                                                                    mProfileSendReqBtn.setEnabled(true);
+                                                                                    mCurrent_state = "friends";
+                                                                                    mProfileSendReqBtn.setText("Desfazer Amizade");
+
+                                                                                    mDeclineBtn.setVisibility(View.INVISIBLE);
+                                                                                    mDeclineBtn.setEnabled(false);
+
+                                                                                }
+                                                                            });
+                                                                }
+                                                            });
+
+                                                }
+                                            });
+                                }
+                            });
+
+                }
+            }
+        });
+
+    }
+}
