@@ -17,18 +17,20 @@ admin.initializeApp(functions.config().firebase);
  * your requirement
  */
 
-exports.envioDeNotificacao = functions.database.ref(`notification/{user_id}/{notification_id}`).onWrite((change, context) => {
+ //USAR PARAMETROS "CHANGE E CONTEXT" para correçao do problema com "event" como parametro
+exports.sendNotification = functions.database.ref('Notifications/{user_id}/{notification_id}').onWrite((change,context) => {
 
 
   /*
    * You can store values as variables from the 'database.ref'
    * Just like here, I've done for 'user_id' and 'notification'
    */
+  
+  //const afterData=change.after.val();
+  const user_id = context.params.user_id;
+  const notification_id = context.params.notification_id;
 
-   const user_id = context.params.user_id;
-   const notification_id = context.params.notification_id;
-
-  console.log('ID do usuário', context.params.user_id);
+  console.log('Nós temos uma notificação de : ', user_id);
 
   /*
    * Stops proceeding to the rest of the function if the entry is deleted from database.
@@ -36,30 +38,65 @@ exports.envioDeNotificacao = functions.database.ref(`notification/{user_id}/{not
    * line from "return console.log.... "
    */
 
-  if(!change.data.val()){
+  //USANDO METODO "AFTER" para a exibir o resultado depois do evento 
+  if(!change.after.val()){
 
-    return console.log('Notificação deletada da base de dados : ', notification_id);
+    return console.log('A notificação foi deletada do banco de dados : ', notification_id);
 
   }
 
+  /*
+   * 'fromUser' query retreives the ID of the user who sent the notification
+   */
 
-  const deviceToken = admin.database().ref(`/users/${user_id}/device_token`).once('value');
+  const fromUser = admin.database().ref(`/Notifications/${user_id}/${notification_id}`).once('value');
 
-  return deviceToken.then(result => {
+  return fromUser.then(fromUserResult => {
 
-    const token_id = result.val();
+    const from_user_id = fromUserResult.val().from;
 
-    const payload = {
-      notification: {
-        title : "Solicitação de Amizade",
-        body: "Você tem uma solicitação",
-        icon: "default"
-      }
-    };
+    console.log('Você tem uma notificação de : ', from_user_id);
 
-    return admin.messaging().sendToDevice(token_id, payload).then(response => {
+    /*
+     * The we run two queries at a time using Firebase 'Promise'.
+     * One to get the name of the user who sent the notification
+     * another one to get the devicetoken to the device we want to send notification to
+     */
 
-      return console.log('Esses são os recursos de notificação');
+    const userQuery = admin.database().ref(`Users/${from_user_id}/name`).once('value');
+    const deviceToken = admin.database().ref(`/Users/${user_id}/device_token`).once('value');
+
+    return Promise.all([userQuery, deviceToken]).then(result => {
+
+      const userName = result[0].val();
+      const token_id = result[1].val();
+
+      /*
+       * We are creating a 'payload' to create a notification to be sent.
+       */
+
+      const payload = {
+        notification: {
+          title : "Nova Solicitação de Amizade",
+          body: `${userName} enviou uma solicitação de amizade`,
+          icon: "default",
+          //click_action : "in.tvac.akshaye.lapitchat_TARGET_NOTIFICATION"
+        },
+        data : {
+          from_user_id : from_user_id
+        }
+      };
+
+      /*
+       * Then using admin.messaging() we are sending the payload notification to the token_id of
+       * the device we retreived.
+       */
+
+      return admin.messaging().sendToDevice(token_id, payload).then(response => {
+
+        console.log('Isso é o recurso de notificação');
+
+      });
 
     });
 
