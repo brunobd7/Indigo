@@ -62,6 +62,8 @@ exports.sendNotification = functions.database.ref('Notifications/{user_id}/{noti
      * One to get the name of the user who sent the notification
      * another one to get the devicetoken to the device we want to send notification to
      */
+    
+    //Usando once()obtém o valor do banco de dados uma vez, enquanto usa on()continua a ouvir as alterações nos dados até que você ligue off().
 
     const userQuery = admin.database().ref(`Users/${from_user_id}/name`).once('value');
     const deviceToken = admin.database().ref(`/Users/${user_id}/device_token`).once('value');
@@ -80,7 +82,7 @@ exports.sendNotification = functions.database.ref('Notifications/{user_id}/{noti
           title : "Nova Solicitação de Amizade",
           body: `${userName} enviou uma solicitação de amizade`,
           icon: "default",
-          //click_action : "in.tvac.akshaye.lapitchat_TARGET_NOTIFICATION"
+        click_action : "pedro.com.br.indigo_TARGET_NOTIFICATION"
         },
         data : {
           from_user_id : from_user_id
